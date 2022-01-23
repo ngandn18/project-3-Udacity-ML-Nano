@@ -170,4 +170,4 @@ In the previous project, there was a suggestion to calculate the successful pred
 
 5. I test the sns.relplot effectively by my pc, but it can not work with SG Studio Jupyter, so I save data to csv file and plot the final chart sns by my local machine. [Here sns.relplot.png](images/sns.relplot.png)
 
-### Thank you for all your helpful and valuable supports.
+### Thank all Udacity members for all your helpful and valuable supports.
