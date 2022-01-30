@@ -101,7 +101,7 @@ def test(model, test_loader, criterion, hook):
     
     running_loss=0
     running_corrects=0
-    dt_sizes = 0
+    # dt_sizes = 0
     
     for inputs, labels in test_loader:
         inputs = inputs.to(device)
@@ -113,10 +113,12 @@ def test(model, test_loader, criterion, hook):
         _, preds = torch.max(outputs, 1)
         running_loss += loss.item() * inputs.size(0)
         running_corrects += torch.sum(preds == labels.data)
-        dt_sizes += inputs.size(0)
+        # dt_sizes += inputs.size(0)
 
-    test_loss = running_loss / dt_sizes
-    test_acc = running_corrects.double() / dt_sizes
+    # test_loss = running_loss / dt_sizes
+    # test_acc = running_corrects.double() / dt_sizes
+    test_loss = running_loss / len(test_loader.dataset)
+    test_acc = running_corrects.double() / len(test_loader.dataset)
     
     print(f'Test Loss: {test_loss}, Test Accu: {test_acc}')
    
@@ -125,8 +127,8 @@ def test(model, test_loader, criterion, hook):
             test_loss, test_acc)
         )
 
-
-def train(model, dataloaders, criterion, optimizer, scheduler, dataset_sizes, hook):
+# def train(model, dataloaders, criterion, optimizer, scheduler, dataset_sizes, hook):
+def train(model, dataloaders, criterion, optimizer, scheduler, hook):
     '''
     TODO: Complete this function that can take a model and
           data loaders for training and will get train the model
@@ -194,8 +196,10 @@ def train(model, dataloaders, criterion, optimizer, scheduler, dataset_sizes, ho
             if phase == 'train':
                 scheduler.step()
 
-            epoch_loss = running_loss / dataset_sizes[phase]
-            epoch_acc = running_corrects.double() / dataset_sizes[phase]
+            # epoch_loss = running_loss / dataset_sizes[phase]
+            # epoch_acc = running_corrects.double() / dataset_sizes[phase]
+            epoch_loss = running_loss / len(dataloaders[phase].dataset)
+            epoch_acc = running_corrects.double() / len(dataloaders[phase].dataset)
 
             print('{} Loss: {:.4f} Acc: {:.4f}'.format(
                 phase, epoch_loss, epoch_acc))
@@ -255,8 +259,9 @@ def create_data_loaders(data_dir, batch_size):
  
     dataset_sizes = {x: len(image_datasets[x]) for x in ['train', 'test', 'valid']}
     class_names = image_datasets['train'].classes
+    # return loaders, dataset_sizes, class_names
 
-    return loaders, dataset_sizes, class_names
+    return loaders, class_names
 
 
 def get_test_data(data_dir, batch_size):
@@ -375,7 +380,7 @@ def main(args):
     TODO: Creat data
     '''
     
-    loaders, dataset_sizes,  class_names = create_data_loaders(args.data_dir, args.batch_size)
+    loaders, class_names = create_data_loaders(args.data_dir, args.batch_size)
     # train_loader, test_loader, valid_loader = loaders.values()
 
     '''
@@ -403,7 +408,7 @@ def main(args):
     '''
     scheduler = lr_scheduler.StepLR(optimizer, step_size=7, gamma=0.1)
     
-    model=train(model, loaders, loss_criterion, optimizer, scheduler, dataset_sizes, hook)
+    model=train(model, loaders, loss_criterion, optimizer, scheduler, hook)
     
     '''
     TODO: Test the model to see its accuracy
@@ -436,12 +441,13 @@ if __name__=='__main__':
         help="learning rate (default: 1.0)"
     )
    
-    parser.add_argument('--data_dir', type=str, default=os.environ['SM_CHANNEL_TRAIN'])
-    parser.add_argument('--model_dir', type=str, default=os.environ['SM_MODEL_DIR'])
-    parser.add_argument('--output_dir', type=str, default=os.environ['SM_OUTPUT_DATA_DIR'])
+    # parser.add_argument('--data_dir', type=str, default=os.environ['SM_CHANNEL_TRAINING'])
+    # when use fit('training', ...)
+    # parser.add_argument('--model_dir', type=str, default=os.environ['SM_MODEL_DIR'])
+    # parser.add_argument('--output_dir', type=str, default=os.environ['SM_OUTPUT_DATA_DIR'])
 
     # Sagemanker Studio
-    parser.add_argument('--data_dir', type=str, default=os.environ['SM_CHANNEL_TRAINING'])
+    parser.add_argument('--data_dir', type=str, default=os.environ['SM_CHANNEL_TRAIN'])
     parser.add_argument('--model_dir', type=str, default=os.environ['SM_MODEL_DIR'])
     parser.add_argument('--output_dir', type=str, default=os.environ['SM_OUTPUT_DATA_DIR'])
 
